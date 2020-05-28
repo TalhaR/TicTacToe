@@ -1,6 +1,6 @@
 import sys
 import pygame
-# from board import Board
+from board import Board
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -10,13 +10,13 @@ BLUE = (0, 0, 255)
 SIZE = (620, 620)
 clock = pygame.time.Clock()
 
-bg = pygame.image.load('assets/board.png')
-bg = pygame.transform.scale(bg, SIZE)
-
-circle = pygame.image.load('assets/circle.jpg')
+circle = pygame.image.load('assets/circle.png')
+circle = pygame.transform.scale(circle, (195, 195))
 
 rectangles = []
 objects = []
+
+board = Board()
 
 
 for i in (0, 210, 420):
@@ -29,25 +29,33 @@ def main():
 
     pygame.display.set_caption("Tic-Tac-Toe")
 
-    while (True):
+    while True:
         pygame.time.delay(100)
         screen.fill(BLACK)
         update()
 
         for event in pygame.event.get():
-            if (event.type == pygame.QUIT):
+            if event.type == pygame.QUIT:
                 sys.exit()
-            if (event.type == pygame.MOUSEBUTTONDOWN):
+            if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
                 for index, rect in enumerate(rectangles):
                     if rect.collidepoint(x, y):
                         print(index)
-                        drawCircle(rect.center)
+                        draw_circle(index, (rect.topleft[0] + 3, rect.topleft[1] + 3))
 
 
-def drawCircle(center):
+def draw_circle(index, center):
     objects.append((circle, center))
-    pass
+
+    row, col = 0, 0
+    if index > 2:
+        row = 9 % index + 1
+        index = int(9 / index)
+
+    board[row][index] = "O"
+
+    print(board)
 
 
 def update():
@@ -58,7 +66,7 @@ def update():
         pygame.draw.rect(screen, COLOR, rect)
 
     for obj in objects:
-        pygame.draw(obj.index(0), obj.index(1))
+        screen.blit(obj[0], obj[1])
     # pygame.draw.circle(screen, BLUE, (99, 99), 100, 10)
 
     # pygame.draw.line(screen, (0, 0, 255), (0, 0), (200, 200), 15)
