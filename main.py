@@ -2,6 +2,7 @@ import sys
 import pygame
 from board import Board
 
+# Colors (R, G, B)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 COLOR = (215, 215, 215)
@@ -10,23 +11,33 @@ BLUE = (0, 0, 255)
 SIZE = (620, 620)
 clock = pygame.time.Clock()
 
+# loads circle and x_mark assets
 circle = pygame.image.load('assets/circle.png')
 circle = pygame.transform.scale(circle, (195, 195))
+x_mark = pygame.image.load('assets/X.png')
+x_mark = pygame.transform.scale(x_mark, (195, 195))
 
-rectangles = []
-objects = []
+# contain background empty tiles
+tiles = []
+# will hold player moves ie. X or O
+player_moves = []
 
+# keeps track of which player's turn it is
+x_turn = True
+
+# back-end matrix for determining game logic
 board = Board()
 
-
+# creates 9 rectangles to place on screen
 for i in (0, 210, 420):
     for j in (0, 210, 420):
-        rectangles.append(pygame.Rect(i, j, 200, 200))
+        tiles.append(pygame.Rect(j, i, 200, 200))
 
 
 def main():
+    # 5 fps because tic-tac-toe doesn't benefit
+    # from a higher framerate
     clock.tick(5)
-
     pygame.display.set_caption("Tic-Tac-Toe")
 
     while True:
@@ -39,38 +50,47 @@ def main():
                 sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = event.pos
-                for index, rect in enumerate(rectangles):
+                for index, rect in enumerate(tiles):
                     if rect.collidepoint(x, y):
                         print(index)
-                        draw_circle(index, (rect.topleft[0] + 3, rect.topleft[1] + 3))
+                        global x_turn
+
+                        if not x_turn:
+                            draw_obj(circle, index, (rect.topleft[0] + 3, rect.topleft[1] + 3))
+                        if x_turn:
+                            draw_obj(x_mark, index, (rect.topleft[0] + 3, rect.topleft[1] + 3))
+                        x_turn = not x_turn
 
 
-def draw_circle(index, center):
-    objects.append((circle, center))
-
+def draw_obj(obj, index, center):
     row, col = 0, 0
     if index > 2:
-        row = 9 % index + 1
-        index = int(9 / index)
+        row = index // 3
+        index = index % 3
 
-    board[row][index] = "O"
-
-    print(board)
+    # only place "X" or "O" if the
+    # original place is empty ("_")
+    if x_turn:
+        if board[row][index] == "_":
+            board[row][index] = "X"
+            print(board)
+            player_moves.append((obj, center))
+    else:
+        if board[row][index] == "_":
+            board[row][index] = "O"
+            print(board)
+            player_moves.append((obj, center))
 
 
 def update():
-    # win.blit(bg, (0, 0))
-
-    # Draws 9 Rectangles on screen
-    for rect in rectangles:
+    # Draws 9 Rectangles onto the screen
+    for rect in tiles:
         pygame.draw.rect(screen, COLOR, rect)
-
-    for obj in objects:
+    # Draws all player moves made
+    for obj in player_moves:
         screen.blit(obj[0], obj[1])
-    # pygame.draw.circle(screen, BLUE, (99, 99), 100, 10)
 
     # pygame.draw.line(screen, (0, 0, 255), (0, 0), (200, 200), 15)
-    # pygame.draw.line(screen, (0, 0, 255), (200, 0), (0, 200), 15)
 
     pygame.display.update()
 
