@@ -7,6 +7,7 @@ class Board:
 
     def __init__(self):
         self.board = self.create_empty_board()
+        self.moves = 0
     
     # Operator[] Overload
     def __getitem__(self, row):
@@ -28,6 +29,7 @@ class Board:
 
     def clear(self):
         self.board = self.create_empty_board()
+        self.moves = 0
 
     def place(self, row, col, x_turn):
         if self.board[row][col] == "_":
@@ -35,34 +37,35 @@ class Board:
                 self.board[row][col] = "X"
             else:
                 self.board[row][col] = "O"
+            self.moves += 1
             return True
         return False
 
-    def check(self):
+    def check_for_winner(self):
         b = self.board
+
+        if self.moves == 9:
+            print("Tie")
+            return True
+
         # Checks Horizontally
         for i in range(3):
-            if b[i].count('X') == 3:
-                print('X won')
-                break
-            if b[i].count('O') == 3:
-                print('O won')
-                break
+            for mark in ('X', 'O'):
+                if b[i].count(mark) == 3:
+                    print(f'{mark} won H')
+                    return True
 
         # Checks Vertically
         for i in range(3):
-            if b[0][i] == b[1][i] == b[2][i] == 'X':
-                print('X won')
-                break
-            if b[0][i] == b[1][i] == b[2][i] == 'O':
-                print('O won')
-                break
+            for mark in ('X', 'O'):
+                if b[0][i] == b[1][i] == b[2][i] == mark:
+                    print(f'{mark} won V')
+                    return True
 
         # Checks Diagonals
-        for _ in ('X', 'O'):
-            if b[0][0] == b[1][1] == b[2][2]:
-                print(f'{_} won')
-                break
-            if b[0][2] == b[1][1] == b[2][0]:
-                print(f'{_} won')
-                break
+        for mark in ('X', 'O'):
+            if b[0][0] == b[1][1] == b[2][2] == mark\
+                    or b[0][2] == b[1][1] == b[2][0] == mark:
+                print(f'{mark} won D')
+                return True
+        return False

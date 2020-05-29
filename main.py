@@ -4,8 +4,7 @@ from board import Board
 
 # Colors (R, G, B)
 BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-COLOR = (215, 215, 215)
+GREY_WHITE = (215, 215, 215)
 BLUE = (0, 0, 255)
 
 # contains background tiles
@@ -42,6 +41,9 @@ def main():
     pygame.display.set_caption("Tic-Tac-Toe")
     load_assets()
 
+    # Keeps track of if match ended
+    match_ended = False
+
     while True:
         pygame.time.delay(100)
         screen.fill(BLACK)
@@ -50,17 +52,24 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                x, y = event.pos
-                for index, rect in enumerate(tiles):
-                    if rect.collidepoint(x, y):
-                        print(index)
+            if event.type == pygame.MOUSEBUTTONDOWN and not match_ended:
+                make_move(event.pos)
 
-                        x2, y2 = rect.topleft
-                        if x_turn:
-                            draw_obj(x_mark, index, (x2 + 3, y2 + 3))
-                        else:
-                            draw_obj(circle, index, (x2 + 3, y2 + 3))
+        if not match_ended and board.check_for_winner():
+            match_ended = True
+
+
+def make_move(pos):
+    x, y = pos
+    for index, rect in enumerate(tiles):
+        if rect.collidepoint(x, y):
+            # print(index)
+
+            x2, y2 = rect.topleft
+            if x_turn:
+                draw_obj(x_mark, index, (x2 + 3, y2 + 3))
+            else:
+                draw_obj(circle, index, (x2 + 3, y2 + 3))
 
 
 def draw_obj(obj, index, center):
@@ -72,14 +81,14 @@ def draw_obj(obj, index, center):
     # original place is empty ("_")
     if board.place(row, col, x_turn):
         player_moves.append((obj, center))
-        print(board)
+        # print(board)
         x_turn = not x_turn
 
 
 def update():
     # Draws 9 Rectangles onto the screen
     for rect in tiles:
-        pygame.draw.rect(screen, COLOR, rect)
+        pygame.draw.rect(screen, GREY_WHITE, rect)
     # Draws all player moves made
     for obj in player_moves:
         screen.blit(obj[0], obj[1])
