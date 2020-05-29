@@ -29,14 +29,23 @@ class Board:
     def clear(self):
         self.board = self.create_empty_board()
 
+    def place(self, row, col, x_turn):
+        if self.board[row][col] == "_":
+            if x_turn:
+                self.board[row][col] = "X"
+            else:
+                self.board[row][col] = "O"
+            return True
+        return False
+
     def check(self):
         b = self.board
         # Checks Horizontally
         for i in range(3):
-            if self.board[i].count('X') == 3:
+            if b[i].count('X') == 3:
                 print('X won')
                 break
-            if self.board[i].count('O') == 3:
+            if b[i].count('O') == 3:
                 print('O won')
                 break
 
