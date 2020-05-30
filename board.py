@@ -1,12 +1,17 @@
 """ Represents the Board for the Game """
 import pygame
-# import game
-# from game import screen
+from enum import Enum
 
 # Colors (R, G, B)
-BLACK = (0, 0, 0)
-GREY_WHITE = (215, 215, 215)
-BLUE = (0, 0, 255)
+WHITE_GREY = (215, 215, 215)
+GREY = (75, 75, 75)
+
+
+class WinCondition(Enum):
+    VERTICALLY = 1
+    HORIZONTALLY = 2
+    TOPLEFT_BOTTOMRIGHT = 3
+    TOPRIGHT_BOTTOMLEFT = 4
 
 
 class Board:
@@ -19,16 +24,18 @@ class Board:
         self.x_turn = True
         self.tiles = []
         self.player_moves = []
-        self.circle, self.x_mark = None, None
+        self.circle = self.x_mark = None
+        self.winning_tiles = ()
+        self.won_con = WinCondition
         self.load_assets()
-    
-    # Operator[] Overload
+
     def __getitem__(self, row):
         return self.board[row]
 
     def __setitem__(self, key, value):
         self.board[key] = value
 
+    # prints the string matrix out in the console
     def __str__(self):
         s = ""
         for row in self.board:
@@ -37,9 +44,18 @@ class Board:
             s += "\n"
         return s
 
+    # returns a 3 x 3 matrix filled with '_'
     def create_empty_board(self):
         return [['_' for _ in range(self.COLS)] for _ in range(self.ROWS)]
 
+    # clears the board and starts a new game
+    def clear(self):
+        self.board = self.create_empty_board()
+        self.moves = 0
+        self.match_ended = False
+        self.player_moves.clear()
+
+    # loads images and adds rectangles to tiles
     def load_assets(self):
         # creates 9 rectangles to place on screen
         for i in (0, 210, 420):
@@ -51,6 +67,11 @@ class Board:
         self.x_mark = pygame.image.load('assets/X.png')
         self.x_mark = pygame.transform.scale(self.x_mark, (195, 195))
 
+    """
+    :param pos tuple that represents a (x, y) coordinate where the user clicked
+    checks if the user clicked on any of the tiles. 
+    If they did then attempt to draw either an X or O there based on whose turn it is
+    """
     def make_move(self, pos):
         x, y = pos
         for index, rect in enumerate(self.tiles):
@@ -61,36 +82,48 @@ class Board:
                 else:
                     self.draw_obj(self.circle, index, (x2 + 3, y2 + 3))
 
+    """
+    :param obj either a circle or x_mark
+    :param index an int from 0-8
+    :param center a tuple that represent an (x, y) position on the screen
+    """
     def draw_obj(self, obj, index, center):
         row = index // 3
         col = index % 3
 
         # only place "X" or "O" if the
         # original place is empty ("_")
-        if self.place(row, col, self.x_turn):
+        if self.place(row, col):
             self.player_moves.append((obj, center))
-            # print(board)
             self.x_turn = not self.x_turn
 
+    """
+    :param screen a pygame.display object 
+    draws all the objects currently in the game onto the screen
+    """
     def update(self, screen):
         # Draws 9 Rectangles onto the screen
         for rect in self.tiles:
-            pygame.draw.rect(screen, GREY_WHITE, rect)
+            pygame.draw.rect(screen, WHITE_GREY, rect)
         # Draws all player moves made
         for obj in self.player_moves:
             screen.blit(obj[0], obj[1])
 
-        # pygame.draw.line(screen, (0, 0, 255), (0, 0), (200, 200), 15)
+        if self.match_ended: self.winning_animation(screen)
 
         pygame.display.update()
 
-    def clear(self):
-        self.board = self.create_empty_board()
-        self.moves = 0
+    # def undo(self):
+    #     self.player_moves.pop(-1)
 
-    def place(self, row, col, x_turn):
+    """
+    :param row an int between 0-2
+    :param col an int between 0-2
+    will attempt to place either an X or O at board[row][col]
+    """
+    def place(self, row, col):
         if self.board[row][col] == "_":
-            if x_turn:
+            if self.x_turn:
                 self.board[row][col] = "X"
             else:
                 self.board[row][col] = "O"
@@ -98,6 +131,45 @@ class Board:
             return True
         return False
 
+    """
+    :param screen pygame.display object
+    checks how the winner won and creates a straight line over those tiles
+    """
+    def winning_animation(self, screen):
+        start = self.winning_tiles[0]
+        end = self.winning_tiles[1]
+        if self.won_con == WinCondition.VERTICALLY:
+            start = start.midtop
+            end = end.midbottom
+        elif self.won_con == WinCondition.HORIZONTALLY:
+            start = start.midleft
+            end = end.midright
+        elif self.won_con == WinCondition.TOPLEFT_BOTTOMRIGHT:
+            start = start.topleft
+            end = end.bottomright
+        else:
+            start = start.topright
+            end = end.bottomleft
+        pygame.draw.line(screen, GREY, start, end, 15)
+
+    # checks if the game is incomplete, tied or if there was a winner
+    def check_if_over(self):
+        if self.match_ended: return True
+        # Minimum of 5 turns before someone can win
+        if self.moves < 5: return False
+        if self.check_for_winner():
+            self.match_ended = True
+            return True
+        # If board is filled and there's no winner then it's a tie
+        if self.moves == 9:
+            print("Tie")
+            self.match_ended = True
+            return True
+
+    """
+    This method checks all three ways to win horizontally, vertically and diagonally
+    If a winner is found then it updates the won_condition and adds the winning tiles
+    """
     def check_for_winner(self):
         b = self.board
         # Checks Horizontally
@@ -105,6 +177,8 @@ class Board:
             for mark in ('X', 'O'):
                 if b[i].count(mark) == 3:
                     print(f'{mark} won H')
+                    self.won_con = WinCondition.HORIZONTALLY
+                    self.winning_tiles = (self.tiles[i * 3], self.tiles[i * 3 + 2])
                     return True
 
         # Checks Vertically
@@ -112,16 +186,20 @@ class Board:
             for mark in ('X', 'O'):
                 if b[0][i] == b[1][i] == b[2][i] == mark:
                     print(f'{mark} won V')
+                    self.won_con = WinCondition.VERTICALLY
+                    self.winning_tiles = (self.tiles[i], self.tiles[6 + i])
                     return True
 
         # Checks Diagonals
         for mark in ('X', 'O'):
-            if b[0][0] == b[1][1] == b[2][2] == mark\
-                    or b[0][2] == b[1][1] == b[2][0] == mark:
+            if b[0][0] == b[1][1] == b[2][2] == mark:
                 print(f'{mark} won D')
+                self.won_con = WinCondition.TOPLEFT_BOTTOMRIGHT
+                self.winning_tiles = (self.tiles[0], self.tiles[-1])
                 return True
-        # If board is filled and no winner then it's a tie
-        if self.moves == 9:
-            print("Tie")
-            return True
+            if b[0][2] == b[1][1] == b[2][0] == mark:
+                print(f'{mark} won D')
+                self.won_con = WinCondition.TOPRIGHT_BOTTOMLEFT
+                self.winning_tiles = (self.tiles[2], self.tiles[6])
+                return True
         return False
