@@ -1,5 +1,12 @@
 """ Represents the Board for the Game """
-# import pygame
+import pygame
+# import game
+# from game import screen
+
+# Colors (R, G, B)
+BLACK = (0, 0, 0)
+GREY_WHITE = (215, 215, 215)
+BLUE = (0, 0, 255)
 
 
 class Board:
@@ -8,6 +15,12 @@ class Board:
     def __init__(self):
         self.board = self.create_empty_board()
         self.moves = 0
+        self.match_ended = False
+        self.x_turn = True
+        self.tiles = []
+        self.player_moves = []
+        self.circle, self.x_mark = None, None
+        self.load_assets()
     
     # Operator[] Overload
     def __getitem__(self, row):
@@ -27,6 +40,50 @@ class Board:
     def create_empty_board(self):
         return [['_' for _ in range(self.COLS)] for _ in range(self.ROWS)]
 
+    def load_assets(self):
+        # creates 9 rectangles to place on screen
+        for i in (0, 210, 420):
+            for j in (0, 210, 420):
+                self.tiles.append(pygame.Rect(j, i, 200, 200))
+        # loads circle and x_mark assets
+        self.circle = pygame.image.load('assets/circle.png')
+        self.circle = pygame.transform.scale(self.circle, (195, 195))
+        self.x_mark = pygame.image.load('assets/X.png')
+        self.x_mark = pygame.transform.scale(self.x_mark, (195, 195))
+
+    def make_move(self, pos):
+        x, y = pos
+        for index, rect in enumerate(self.tiles):
+            if rect.collidepoint(x, y):
+                x2, y2 = rect.topleft
+                if self.x_turn:
+                    self.draw_obj(self.x_mark, index, (x2 + 3, y2 + 3))
+                else:
+                    self.draw_obj(self.circle, index, (x2 + 3, y2 + 3))
+
+    def draw_obj(self, obj, index, center):
+        row = index // 3
+        col = index % 3
+
+        # only place "X" or "O" if the
+        # original place is empty ("_")
+        if self.place(row, col, self.x_turn):
+            self.player_moves.append((obj, center))
+            # print(board)
+            self.x_turn = not self.x_turn
+
+    # def update(self):
+    #     # Draws 9 Rectangles onto the screen
+    #     for rect in self.tiles:
+    #         pygame.draw.rect(screen, GREY_WHITE, rect)
+    #     # Draws all player moves made
+    #     for obj in self.player_moves:
+    #         screen.blit(obj[0], obj[1])
+    #
+    #     # pygame.draw.line(screen, (0, 0, 255), (0, 0), (200, 200), 15)
+    #
+    #     pygame.display.update()
+
     def clear(self):
         self.board = self.create_empty_board()
         self.moves = 0
@@ -42,12 +99,11 @@ class Board:
         return False
 
     def check_for_winner(self):
-        b = self.board
-
         if self.moves == 9:
             print("Tie")
             return True
 
+        b = self.board
         # Checks Horizontally
         for i in range(3):
             for mark in ('X', 'O'):
