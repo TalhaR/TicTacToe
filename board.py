@@ -72,17 +72,17 @@ class Board:
             # print(board)
             self.x_turn = not self.x_turn
 
-    # def update(self):
-    #     # Draws 9 Rectangles onto the screen
-    #     for rect in self.tiles:
-    #         pygame.draw.rect(screen, GREY_WHITE, rect)
-    #     # Draws all player moves made
-    #     for obj in self.player_moves:
-    #         screen.blit(obj[0], obj[1])
-    #
-    #     # pygame.draw.line(screen, (0, 0, 255), (0, 0), (200, 200), 15)
-    #
-    #     pygame.display.update()
+    def update(self, screen):
+        # Draws 9 Rectangles onto the screen
+        for rect in self.tiles:
+            pygame.draw.rect(screen, GREY_WHITE, rect)
+        # Draws all player moves made
+        for obj in self.player_moves:
+            screen.blit(obj[0], obj[1])
+
+        # pygame.draw.line(screen, (0, 0, 255), (0, 0), (200, 200), 15)
+
+        pygame.display.update()
 
     def clear(self):
         self.board = self.create_empty_board()
@@ -99,10 +99,6 @@ class Board:
         return False
 
     def check_for_winner(self):
-        if self.moves == 9:
-            print("Tie")
-            return True
-
         b = self.board
         # Checks Horizontally
         for i in range(3):
@@ -124,4 +120,8 @@ class Board:
                     or b[0][2] == b[1][1] == b[2][0] == mark:
                 print(f'{mark} won D')
                 return True
+        # If board is filled and no winner then it's a tie
+        if self.moves == 9:
+            print("Tie")
+            return True
         return False

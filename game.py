@@ -16,7 +16,7 @@ def main():
     while True:
         pygame.time.delay(100)
         screen.fill((0, 0, 0))
-        update()
+        board.update(screen)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -35,19 +35,6 @@ def main():
 
 def winning_animation():
     pass
-
-
-def update():
-    # Draws 9 Rectangles onto the screen
-    for rect in board.tiles:
-        pygame.draw.rect(screen, (215, 215, 215), rect)
-    # Draws all player moves made
-    for obj in board.player_moves:
-        screen.blit(obj[0], obj[1])
-
-    # pygame.draw.line(screen, (0, 0, 255), (0, 0), (200, 200), 15)
-
-    pygame.display.update()
 
 
 if __name__ == "__main__":
