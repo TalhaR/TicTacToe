@@ -6,7 +6,9 @@ Classic Tic-Tac-Toe Game with GUI
 
 # Instructions
 1. Clone or download the repository.
-2. On MacOS, just double-click the TTT application.
+2. Launch the application. 
+   - On Windows, just double-click the TTT application.
+   - On MacOS, navigate to the MacOS folder and launch the TTT.app
 
 # Controls
 - Click on a tile to place 'X' or 'O'. Game will alternate between by default.
