@@ -1,5 +1,7 @@
 """ Represents the Board for the Game """
 import pygame
+import sys
+import os
 from enum import Enum
 
 # Colors (R, G, B)
@@ -7,11 +9,22 @@ WHITE_GREY = (215, 215, 215)
 GREY = (75, 75, 75)
 
 
+# This method can be ignored. It is for locating assets for PyInstaller
+def resource_path(relative_path):
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
+
+
 class WinCondition(Enum):
     VERTICALLY = 1
     HORIZONTALLY = 2
     TOPLEFT_BOTTOMRIGHT = 3
     TOPRIGHT_BOTTOMLEFT = 4
+    TIE = 5
 
 
 class Board:
@@ -62,9 +75,9 @@ class Board:
             for j in (0, 210, 420):
                 self.tiles.append(pygame.Rect(j, i, 200, 200))
         # loads circle and x_mark assets
-        self.circle = pygame.image.load('assets/circle.png')
+        self.circle = pygame.image.load(resource_path('assets/circle.png'))
         self.circle = pygame.transform.scale(self.circle, (195, 195))
-        self.x_mark = pygame.image.load('assets/X.png')
+        self.x_mark = pygame.image.load(resource_path('assets/X.png'))
         self.x_mark = pygame.transform.scale(self.x_mark, (195, 195))
 
     """
@@ -109,12 +122,10 @@ class Board:
         for obj in self.player_moves:
             screen.blit(obj[0], obj[1])
 
-        if self.match_ended: self.winning_animation(screen)
+        if self.match_ended and self.won_con != WinCondition.TIE:
+            self.winning_animation(screen)
 
         pygame.display.update()
-
-    # def undo(self):
-    #     self.player_moves.pop(-1)
 
     """
     :param row an int between 0-2
@@ -147,7 +158,7 @@ class Board:
         elif self.won_con == WinCondition.TOPLEFT_BOTTOMRIGHT:
             start = start.topleft
             end = end.bottomright
-        else:
+        elif self.won_con == WinCondition.TOPRIGHT_BOTTOMLEFT:
             start = start.topright
             end = end.bottomleft
         pygame.draw.line(screen, GREY, start, end, 15)
@@ -164,6 +175,7 @@ class Board:
         if self.moves == 9:
             print("Tie")
             self.match_ended = True
+            self.won_con = WinCondition.TIE
             return True
 
     """

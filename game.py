@@ -3,9 +3,13 @@ from board import Board
 
 
 def play():
-    # 1 fps because tic-tac-toe doesn't benefit from a higher framerate
+    # Size of window
+    size = (620, 620)
+    screen = pygame.display.set_mode(size)
+
+    # 5 fps because tic-tac-toe doesn't benefit from a higher framerate
     clock = pygame.time.Clock()
-    clock.tick(1)
+    clock.tick(5)
     pygame.display.set_caption("Tic-Tac-Toe")
     # back-end matrix for determining game logic
     board = Board()
@@ -23,16 +27,10 @@ def play():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
                     board.clear()
-                # if event.key == pygame.K_u:
-                #     board.undo()
 
         board.check_if_over()
 
 
 if __name__ == "__main__":
     pygame.init()
-    # Size of window
-    SIZE = (620, 620)
-    screen = pygame.display.set_mode(SIZE)
-
     play()
