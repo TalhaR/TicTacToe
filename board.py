@@ -1,8 +1,7 @@
 """ Represents the Board for the Game """
 from typing import List, Tuple
 import pygame
-import sys
-import os
+import sys, os
 from enum import Enum
 
 # Colors (R, G, B)
@@ -11,7 +10,7 @@ GREY = (75, 75, 75)
 
 
 # This method can be ignored. It is for locating assets for PyInstaller
-def resource_path(relative_path):
+def resource_path(relative_path: str) -> str:
     try:
         # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
@@ -31,19 +30,21 @@ class WinCondition(Enum):
 class Board:
     ROWS = COLS = 3
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.board = self.create_empty_board()
         self.moves = 0
         self.match_ended = False
         self.x_turn = True
-        self.tiles = []
-        self.player_moves = []
+        self.tiles: List[pygame.Rect] = []
+        # List of Tuples, where 1st elem is an obj and 2nd elem is a pos(x, y)
+        self.player_moves: List[Tuple[pygame.Rect, Tuple[int, int]]] = []
         self.circle = self.x_mark = None
-        self.winning_tiles = ()
-        self.won_con = WinCondition
+        # Storing starting and ending tiles to create a line later
+        self.winning_tiles: Tuple[pygame.Rect, pygame.Rect]
+        self.won_con: WinCondition
         self.load_assets()
 
-    def __getitem__(self, row: int):
+    def __getitem__(self, row: int) -> List[str]:
         return self.board[row]
 
     def __setitem__(self, key: int, value: List[str]):
@@ -63,14 +64,14 @@ class Board:
         return [['_' for _ in range(self.COLS)] for _ in range(self.ROWS)]
 
     # clears the board and starts a new game
-    def clear(self):
+    def clear(self) -> None:
         self.board = self.create_empty_board()
         self.moves = 0
         self.match_ended = False
         self.player_moves.clear()
 
     # loads images and adds rectangles to tiles
-    def load_assets(self):
+    def load_assets(self) -> None:
         # creates 9 rectangles to place on screen
         for i in (0, 210, 420):
             for j in (0, 210, 420):
@@ -82,11 +83,10 @@ class Board:
         self.x_mark = pygame.transform.scale(self.x_mark, (195, 195))
 
     """
-    :param pos tuple that represents a (x, y) coordinate where the user clicked
     checks if the user clicked on any of the tiles. 
     If they did then attempt to draw either an X or O there based on whose turn it is
     """
-    def make_move(self, pos: Tuple[int, int]):
+    def make_move(self, pos: Tuple[int, int]) -> None:
         x, y = pos
         for index, rect in enumerate(self.tiles):
             if rect.collidepoint(x, y):
@@ -96,12 +96,8 @@ class Board:
                 else:
                     self.draw_obj(self.circle, index, (x2 + 3, y2 + 3))
 
-    """
-    :param obj either a circle or x_mark
-    :param index an int from 0-8
-    :param center a tuple that represent an (x, y) position on the screen
-    """
-    def draw_obj(self, obj, index: int, center: Tuple[int, int]):
+    # :param obj either a circle or x_mark
+    def draw_obj(self, obj: pygame.image, index: int, center: Tuple[int, int]) -> None:
         row = index // 3
         col = index % 3
 
@@ -115,7 +111,7 @@ class Board:
     :param screen a pygame.display object 
     draws all the objects currently in the game onto the screen
     """
-    def update(self, screen):
+    def update(self, screen: pygame.display):
         # Draws 9 Rectangles onto the screen
         for rect in self.tiles:
             pygame.draw.rect(screen, WHITE_GREY, rect)
@@ -147,7 +143,7 @@ class Board:
     :param screen pygame.display object
     checks how the winner won and creates a straight line over those tiles
     """
-    def winning_animation(self, screen):
+    def winning_animation(self, screen: pygame.display) -> None:
         start = self.winning_tiles[0]
         end = self.winning_tiles[1]
         if self.won_con == WinCondition.VERTICALLY:
@@ -178,6 +174,7 @@ class Board:
             self.match_ended = True
             self.won_con = WinCondition.TIE
             return True
+        return False
 
     """
     This method checks all 3 ways to win horizontally, vertically & diagonally

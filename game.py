@@ -2,7 +2,7 @@ import pygame
 from board import Board
 
 
-def play():
+def play() -> None:
     # Size of window
     size = (620, 620)
     screen = pygame.display.set_mode(size)
