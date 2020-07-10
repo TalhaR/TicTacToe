@@ -8,7 +8,6 @@ from enum import Enum
 WHITE_GREY = (215, 215, 215)
 GREY = (75, 75, 75)
 
-
 # This method can be ignored. It is for locating assets for PyInstaller
 def resource_path(relative_path: str) -> str:
     try:
@@ -18,14 +17,12 @@ def resource_path(relative_path: str) -> str:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 
-
 class WinCondition(Enum):
     VERTICALLY = 1
     HORIZONTALLY = 2
     TOPLEFT_BOTTOMRIGHT = 3
     TOPRIGHT_BOTTOMLEFT = 4
     TIE = 5
-
 
 class Board:
     ROWS = COLS = 3
@@ -82,10 +79,8 @@ class Board:
         self.x_mark = pygame.image.load(resource_path('assets/X.png'))
         self.x_mark = pygame.transform.scale(self.x_mark, (195, 195))
 
-    """
-    checks if the user clicked on any of the tiles. 
-    If they did then attempt to draw either an X or O there based on whose turn it is
-    """
+    # Checks if the user clicked on any of the tiles. 
+    # If they did then attempt to draw either an X or O there based on whose turn it is
     def make_move(self, pos: Tuple[int, int]) -> None:
         x, y = pos
         for index, rect in enumerate(self.tiles):
@@ -107,10 +102,8 @@ class Board:
             self.player_moves.append((obj, center))
             self.x_turn = not self.x_turn
 
-    """
-    :param screen a pygame.display object 
-    draws all the objects currently in the game onto the screen
-    """
+
+    # draws all the objects currently in the game onto the screen
     def update(self, screen: pygame.display):
         # Draws 9 Rectangles onto the screen
         for rect in self.tiles:
@@ -124,11 +117,7 @@ class Board:
 
         pygame.display.update()
 
-    """
-    :param row an int between 0-2
-    :param col an int between 0-2
-    will attempt to place either an X or O at board[row][col]
-    """
+    # will attempt to place either an X or O at board[row][col]
     def place(self, row: int, col: int):
         if self.board[row][col] == "_":
             if self.x_turn:
@@ -139,10 +128,7 @@ class Board:
             return True
         return False
 
-    """
-    :param screen pygame.display object
-    checks how the winner won and creates a straight line over those tiles
-    """
+    # checks how the winner won and creates a straight line over those tiles
     def winning_animation(self, screen: pygame.display) -> None:
         start = self.winning_tiles[0]
         end = self.winning_tiles[1]
@@ -176,10 +162,8 @@ class Board:
             return True
         return False
 
-    """
-    This method checks all 3 ways to win horizontally, vertically & diagonally
-    If a player won then it updates the won_condition & adds the winning tiles
-    """
+    # This method checks all 3 ways to win horizontally, vertically & diagonally
+    # If a player won then it updates the won_condition & adds the winning tiles
     def check_for_winner(self) -> bool:
         b = self.board
         # Checks Horizontally
