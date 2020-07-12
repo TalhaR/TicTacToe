@@ -7,6 +7,7 @@ from enum import Enum
 # Colors (R, G, B)
 WHITE_GREY = (215, 215, 215)
 GREY = (75, 75, 75)
+BLACK = (0, 0, 0)
 
 # This method can be ignored. It is for locating assets for PyInstaller
 def resource_path(relative_path: str) -> str:
@@ -39,6 +40,7 @@ class Board:
         # Storing starting and ending tiles to create a line later
         self.winning_tiles: Tuple[pygame.Rect, pygame.Rect]
         self.won_con: WinCondition
+        self.winner: str
         self.load_assets()
 
     def __getitem__(self, row: int) -> List[str]:
@@ -112,9 +114,18 @@ class Board:
         for obj in self.player_moves:
             screen.blit(obj[0], obj[1])
 
-        if self.match_ended and self.won_con != WinCondition.TIE:
-            self.winning_animation(screen)
-
+        if self.match_ended:
+            font = pygame.font.Font(None, 128)
+            width = pygame.display.get_surface().get_width()
+            height = pygame.display.get_surface().get_height()
+            text: pygame.font
+            if self.won_con != WinCondition.TIE:
+                self.winning_animation(screen)
+                output = f"{self.winner} won"
+                text = font.render(output, 1, GREY)
+            else:
+                text = font.render("TIE", 1, GREY)
+            screen.blit(text, (width // 2 - text.get_width() // 2, height // 2 - 20))
         pygame.display.update()
 
     # will attempt to place either an X or O at board[row][col]
@@ -170,7 +181,7 @@ class Board:
         for i in range(3):
             for mark in ('X', 'O'):
                 if b[i].count(mark) == 3:
-                    print(f'{mark} won H')
+                    self.winner = mark
                     self.won_con = WinCondition.HORIZONTALLY
                     self.winning_tiles = (self.tiles[i * 3], self.tiles[i * 3 + 2])
                     return True
@@ -179,7 +190,7 @@ class Board:
         for i in range(3):
             for mark in ('X', 'O'):
                 if b[0][i] == b[1][i] == b[2][i] == mark:
-                    print(f'{mark} won V')
+                    self.winner = mark
                     self.won_con = WinCondition.VERTICALLY
                     self.winning_tiles = (self.tiles[i], self.tiles[6 + i])
                     return True
@@ -187,12 +198,12 @@ class Board:
         # Checks Diagonals
         for mark in ('X', 'O'):
             if b[0][0] == b[1][1] == b[2][2] == mark:
-                print(f'{mark} won D')
+                self.winner = mark
                 self.won_con = WinCondition.TOPLEFT_BOTTOMRIGHT
                 self.winning_tiles = (self.tiles[0], self.tiles[-1])
                 return True
             if b[0][2] == b[1][1] == b[2][0] == mark:
-                print(f'{mark} won D')
+                self.winner = mark
                 self.won_con = WinCondition.TOPRIGHT_BOTTOMLEFT
                 self.winning_tiles = (self.tiles[2], self.tiles[6])
                 return True
